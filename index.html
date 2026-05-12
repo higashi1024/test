@@ -2,78 +2,37 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ブロック崩し</title>
+  <title>DONKEY KONG</title>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      background: #1a1a2e;
+      background: #000;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       min-height: 100vh;
-      font-family: 'Segoe UI', sans-serif;
-      color: #eee;
+      font-family: monospace;
+      color: #fff;
     }
-
-    h1 {
-      font-size: 2rem;
-      margin-bottom: 12px;
-      letter-spacing: 0.1em;
-      color: #e94560;
-    }
-
-    #hud {
-      display: flex;
-      gap: 40px;
-      margin-bottom: 12px;
-      font-size: 1rem;
-    }
-
-    #hud span {
-      background: #16213e;
-      padding: 4px 16px;
-      border-radius: 20px;
-      border: 1px solid #0f3460;
-    }
-
-    canvas {
-      background: #16213e;
-      border: 2px solid #0f3460;
-      border-radius: 4px;
-      display: block;
-    }
-
-    #message {
-      margin-top: 16px;
-      font-size: 1.1rem;
-      min-height: 1.5em;
-      color: #e94560;
-    }
-
-    #controls {
-      margin-top: 12px;
-      font-size: 0.85rem;
-      color: #888;
-    }
+    h1 { font-size: 1.5rem; margin-bottom: 8px; color: #f5a623; letter-spacing: 0.2em; }
+    #hud { display: flex; gap: 32px; margin-bottom: 8px; font-size: 0.9rem; }
+    #hud span { background: #111; padding: 3px 14px; border-radius: 12px; border: 1px solid #333; }
+    canvas { background: #000010; border: 2px solid #333; display: block; }
+    #message { margin-top: 12px; font-size: 1rem; color: #f5a623; min-height: 1.5em; text-align: center; }
+    #controls { margin-top: 8px; font-size: 0.78rem; color: #555; text-align: center; }
   </style>
 </head>
 <body>
-  <h1>ブロック崩し</h1>
+  <h1>DONKEY KONG</h1>
   <div id="hud">
-    <span>スコア: <strong id="score">0</strong></span>
-    <span>ライフ: <strong id="lives">3</strong></span>
-    <span>レベル: <strong id="level">1</strong></span>
+    <span>SCORE <strong id="score">0</strong></span>
+    <span>LIVES <strong id="lives">3</strong></span>
+    <span>STAGE <strong id="stage">1</strong></span>
   </div>
-  <canvas id="gameCanvas" width="480" height="520"></canvas>
-  <div id="message"></div>
-  <div id="controls">← → キー または マウスでパドルを操作 | Space でスタート</div>
+  <canvas id="gameCanvas" width="480" height="560"></canvas>
+  <div id="message">Space / Enter でスタート</div>
+  <div id="controls">← → 移動 &nbsp;|&nbsp; ↑ / Z ジャンプ &nbsp;|&nbsp; ↑ ↓ ハシゴ</div>
   <script src="main.js"></script>
 </body>
 </html>
