@@ -129,11 +129,12 @@ function startStage() {
 
 function spawnPlayer() {
   player = {
-    x: 55, y: PLATS[0].y,   // feet at platform 0 surface
+    x: 55, y: PLATS[0].y,
     vx: 0, vy: 0,
     w: 16, h: 26,
     onGround: false,
     onLadder: false,
+    currentLadder: null,
     facing: 1,
     wFrame: 0, wTimer: 0,
   };
@@ -144,16 +145,6 @@ function landOnPlat(cx, footY, prevFootY, halfW) {
   for (const p of PLATS) {
     if (cx - halfW < p.x + p.w && cx + halfW > p.x) {
       if (prevFootY <= p.y + 1 && footY >= p.y) return p;
-    }
-  }
-  return null;
-}
-
-function climbThroughPlat(cx, footY, prevFootY) {
-  // Climbing UP: feet cross platform surface from below → above
-  for (const p of PLATS) {
-    if (cx > p.x + 2 && cx < p.x + p.w - 2) {
-      if (prevFootY >= p.y && footY < p.y) return p;
     }
   }
   return null;
@@ -171,7 +162,8 @@ function barrelLanding(bx, by, prevBy) {
 // ── Ladder helpers ────────────────────────────────────────────────────────────
 function ladderAt(cx, footY, headY) {
   for (const l of LADDERS) {
-    if (cx > l.x - LADDER_W / 2 - 3 && cx < l.x + LADDER_W / 2 + 3) {
+    // Wide detection zone so it's easy to grab on iPad
+    if (cx > l.x - 22 && cx < l.x + 22) {
       if (footY >= l.top - 4 && headY <= l.bot + 4) return l;
     }
   }
@@ -181,65 +173,67 @@ function ladderAt(cx, footY, headY) {
 // ── Update player ─────────────────────────────────────────────────────────────
 function updatePlayer() {
   const p = player;
-  const prevX = p.x, prevY = p.y;
-  const ladder = ladderAt(p.x, p.y, p.y - p.h);
+  const prevY = p.y;
+  const nearLadder = ladderAt(p.x, p.y, p.y - p.h);
 
-  if (ladder && (keys['ArrowUp'] || keys['ArrowDown'] || p.onLadder)) {
-    if (keys['ArrowUp'])   { p.onLadder = true; p.vy = -2.5; p.vx = 0; }
-    else if (keys['ArrowDown']) { p.onLadder = true; p.vy = 2.5; p.vx = 0; }
-    else if (p.onLadder)  { p.vy = 0; p.vx = 0; }
-  } else {
-    p.onLadder = false;
+  // ── Ladder input ──────────────────────────────────────────────────
+  if (nearLadder && (keys['ArrowUp'] || keys['ArrowDown'])) {
+    p.onLadder = true;
+    p.currentLadder = nearLadder;
+    p.vy = keys['ArrowUp'] ? -2.5 : 2.5;
+    p.vx = 0;
+  } else if (p.onLadder) {
+    if (nearLadder) {
+      p.vx = 0; p.vy = 0;   // hold position on ladder
+    } else {
+      p.onLadder = false; p.currentLadder = null;
+    }
   }
 
+  // ── Normal movement ───────────────────────────────────────────────
   if (!p.onLadder) {
     p.vx = keys['ArrowLeft'] ? -WALK_SPD : keys['ArrowRight'] ? WALK_SPD : 0;
     if (p.vx < 0) p.facing = -1;
     if (p.vx > 0) p.facing = 1;
 
-    if ((keys['ArrowUp'] || keys['KeyZ'] || keys['KeyX']) && p.onGround) {
-      p.vy = JUMP_V;
-      p.onGround = false;
-    }
+    // JUMP button (KeyZ) jumps always; ArrowUp only jumps when not near a ladder
+    const wantsJump = keys['KeyZ'] || keys['KeyX'] || (keys['ArrowUp'] && !nearLadder);
+    if (wantsJump && p.onGround) { p.vy = JUMP_V; p.onGround = false; }
     p.vy += GRAVITY;
   }
 
+  // ── Apply velocity ────────────────────────────────────────────────
   p.x += p.vx;
   p.y += p.vy;
   p.x = Math.max(p.w / 2, Math.min(W - p.w / 2, p.x));
 
-  // Landing on a platform (falling down)
-  if (p.vy >= 0) {
-    const pl = landOnPlat(p.x, p.y, prevY, p.w / 2);
-    if (pl) {
-      p.y = pl.y;
-      p.vy = 0;
-      p.onGround = true;
-      p.onLadder = false;
-    } else if (!p.onLadder) {
-      p.onGround = false;
+  // ── Ladder boundary snap ──────────────────────────────────────────
+  if (p.onLadder && p.currentLadder) {
+    const l = p.currentLadder;
+    if (p.vy > 0 && p.y >= l.bot) {
+      // Reached bottom → land on lower platform
+      p.y = l.bot; p.vy = 0; p.onGround = true;
+      p.onLadder = false; p.currentLadder = null;
+    } else if (p.vy < 0 && p.y <= l.top) {
+      // Reached top → land on upper platform
+      p.y = l.top; p.vy = 0; p.onGround = true;
+      p.onLadder = false; p.currentLadder = null;
     }
   }
 
-  // Exiting ladder at the top (climbing up through a platform)
-  if (p.onLadder && p.vy < 0) {
-    const pl = climbThroughPlat(p.x, p.y, prevY);
-    if (pl) {
-      p.y = pl.y;
-      p.vy = 0;
-      p.onGround = true;
-      p.onLadder = false;
-    }
+  // ── Platform landing (only when NOT on ladder) ────────────────────
+  if (!p.onLadder && p.vy >= 0) {
+    const pl = landOnPlat(p.x, p.y, prevY, p.w / 2 - 2);
+    if (pl) { p.y = pl.y; p.vy = 0; p.onGround = true; }
+    else p.onGround = false;
   }
 
   if (p.y > H + 40) { die(); return; }
 
-  // Walk animation
+  // ── Walk animation ────────────────────────────────────────────────
   if (p.vx !== 0 && p.onGround) {
     if (++p.wTimer > 7) { p.wTimer = 0; p.wFrame = (p.wFrame + 1) % 4; }
-  } else {
-    p.wFrame = 0; p.wTimer = 0;
-  }
+  } else { p.wFrame = 0; p.wTimer = 0; }
 }
 
 // ── Update barrels ────────────────────────────────────────────────────────────
