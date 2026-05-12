@@ -63,6 +63,41 @@ document.addEventListener('keydown', e => {
 });
 document.addEventListener('keyup', e => { keys[e.code] = false; });
 
+// ── Touch controls ────────────────────────────────────────────────────────────
+function bindTouchBtn(id, keyCode) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const press = e => {
+    e.preventDefault();
+    keys[keyCode] = true;
+    el.classList.add('pressed');
+  };
+  const release = e => {
+    e.preventDefault();
+    keys[keyCode] = false;
+    el.classList.remove('pressed');
+  };
+  el.addEventListener('touchstart',  press,   { passive: false });
+  el.addEventListener('touchend',    release, { passive: false });
+  el.addEventListener('touchcancel', release, { passive: false });
+  el.addEventListener('mousedown',   press);
+  el.addEventListener('mouseup',     release);
+  el.addEventListener('mouseleave',  release);
+}
+
+bindTouchBtn('btn-left',  'ArrowLeft');
+bindTouchBtn('btn-right', 'ArrowRight');
+bindTouchBtn('btn-up',    'ArrowUp');
+bindTouchBtn('btn-down',  'ArrowDown');
+bindTouchBtn('btn-jump',  'KeyZ');
+
+['touchstart', 'click'].forEach(ev => {
+  document.getElementById('btn-start')?.addEventListener(ev, e => {
+    e.preventDefault();
+    handleAction();
+  }, { passive: false });
+});
+
 function handleAction() {
   if (gameState === 'title')                      startStage();
   else if (gameState === 'gameover')              initGame();

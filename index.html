@@ -2,6 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <title>DONKEY KONG</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -10,17 +11,97 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
       min-height: 100vh;
+      padding: 8px 0 16px;
       font-family: monospace;
       color: #fff;
+      touch-action: none;
+      user-select: none;
+      -webkit-user-select: none;
     }
-    h1 { font-size: 1.5rem; margin-bottom: 8px; color: #f5a623; letter-spacing: 0.2em; }
-    #hud { display: flex; gap: 32px; margin-bottom: 8px; font-size: 0.9rem; }
-    #hud span { background: #111; padding: 3px 14px; border-radius: 12px; border: 1px solid #333; }
-    canvas { background: #000010; border: 2px solid #333; display: block; }
-    #message { margin-top: 12px; font-size: 1rem; color: #f5a623; min-height: 1.5em; text-align: center; }
-    #controls { margin-top: 8px; font-size: 0.78rem; color: #555; text-align: center; }
+    h1 { font-size: 1.3rem; margin-bottom: 6px; color: #f5a623; letter-spacing: 0.2em; }
+    #hud { display: flex; gap: 24px; margin-bottom: 6px; font-size: 0.85rem; }
+    #hud span { background: #111; padding: 2px 12px; border-radius: 12px; border: 1px solid #333; }
+
+    canvas {
+      display: block;
+      /* Scale down proportionally on small screens */
+      width: min(480px, 100vw);
+      height: auto;
+      border: 2px solid #333;
+    }
+
+    #message {
+      margin-top: 8px;
+      font-size: 0.9rem;
+      color: #f5a623;
+      min-height: 1.3em;
+      text-align: center;
+      padding: 0 8px;
+    }
+
+    /* ── Touch controls ────────────────────────────────── */
+    #touch-controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      width: min(480px, 100vw);
+      padding: 12px 20px 4px;
+    }
+
+    .dpad {
+      display: grid;
+      grid-template-columns: repeat(3, 56px);
+      grid-template-rows: repeat(2, 56px);
+      gap: 5px;
+    }
+    #btn-up    { grid-column: 2; grid-row: 1; }
+    #btn-left  { grid-column: 1; grid-row: 2; }
+    #btn-down  { grid-column: 2; grid-row: 2; }
+    #btn-right { grid-column: 3; grid-row: 2; }
+
+    .btn {
+      background: rgba(255,255,255,0.12);
+      border: 2px solid rgba(255,255,255,0.25);
+      border-radius: 10px;
+      color: #fff;
+      font-size: 1.4rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .btn.pressed {
+      background: rgba(245,166,35,0.45);
+      border-color: #f5a623;
+    }
+
+    .action-btns {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      align-items: center;
+    }
+    #btn-jump {
+      width: 76px;
+      height: 76px;
+      border-radius: 50%;
+      background: rgba(204,17,17,0.4);
+      border: 2px solid #cc3311;
+      font-size: 0.8rem;
+      font-weight: bold;
+    }
+    #btn-jump.pressed { background: rgba(204,17,17,0.85); }
+
+    #btn-start {
+      width: 68px;
+      height: 30px;
+      border-radius: 15px;
+      font-size: 0.7rem;
+      font-weight: bold;
+      letter-spacing: 0.05em;
+    }
   </style>
 </head>
 <body>
@@ -30,9 +111,23 @@
     <span>LIVES <strong id="lives">3</strong></span>
     <span>STAGE <strong id="stage">1</strong></span>
   </div>
+
   <canvas id="gameCanvas" width="480" height="560"></canvas>
-  <div id="message">Space / Enter でスタート</div>
-  <div id="controls">← → 移動 &nbsp;|&nbsp; ↑ / Z ジャンプ &nbsp;|&nbsp; ↑ ↓ ハシゴ</div>
+  <div id="message">START を押してスタート</div>
+
+  <div id="touch-controls">
+    <div class="dpad">
+      <div class="btn" id="btn-up">▲</div>
+      <div class="btn" id="btn-left">◀</div>
+      <div class="btn" id="btn-down">▼</div>
+      <div class="btn" id="btn-right">▶</div>
+    </div>
+    <div class="action-btns">
+      <div class="btn" id="btn-start">START</div>
+      <div class="btn" id="btn-jump">JUMP</div>
+    </div>
+  </div>
+
   <script src="main.js"></script>
 </body>
 </html>
