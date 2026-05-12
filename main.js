@@ -108,7 +108,12 @@ function handleAction() {
 function initGame() {
   score = 0; lives = 3; stage = 1;
   gameState = 'title';
-  msgEl.textContent = 'Space / Enter でスタート';
+  fc = 0;
+  barrels = [];
+  barrelTimer = 160;
+  dk = { frame: 0, timer: 0 };
+  spawnPlayer();
+  msgEl.textContent = 'START を押してスタート';
   updateHUD();
 }
 
@@ -328,7 +333,7 @@ function update() {
   if (gameState === 'cleared') {
     if (--clearTimer <= 0) {
       gameState = 'title';
-      msgEl.textContent = 'Space / Enter で次のステージへ';
+      msgEl.textContent = 'START を押して次のステージへ';
     }
     return;
   }
@@ -458,10 +463,10 @@ function draw() {
   ctx.fillStyle = '#000010'; ctx.fillRect(0, 0, W, H);
   drawPlatforms();
   drawLadders();
+  if (dk) drawDK();
   drawPauline();
-  drawDK();
-  drawBarrels();
-  if (gameState !== 'dying' || Math.floor(fc / 5) % 2 === 0) drawPlayer();
+  if (barrels) drawBarrels();
+  if (player && (gameState !== 'dying' || Math.floor(fc / 5) % 2 === 0)) drawPlayer();
 }
 
 // ── Loop ─────────────────────────────────────────────────────────────────────
